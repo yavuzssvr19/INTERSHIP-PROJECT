@@ -1,5 +1,7 @@
 import seaborn as sns
-
+import numpy as np
+import matplotlib.pyplot as plt
+from typing import Optional, Tuple
 CM = 1 / 2.54
 TINY = (5 * CM, 3 * CM)
 SMALL = (9 * CM, 5 * CM)
@@ -107,3 +109,46 @@ def set_visual_style():
             "ytick.color": "#232324",
         },
     )
+    
+def brain_plotter(
+    data: np.ndarray,
+    coordinates: np.ndarray,
+    axis: plt.Axes,
+    view: Tuple[int, int] = (90, 180),
+    size: int = 20,
+    cmap: any = "viridis",
+    scatter_kwargs=Optional[None],
+) -> plt.Axes:
+    """plots the 3D scatter plot of the brain. It's a simple function that takes the data, the coordinates, and the axis and plots the brain.
+    It's a modified version the netneurotools python package but you can give it the axis to plot in. See here:
+    https://netneurotools.readthedocs.io/en/latest/
+
+    Args:
+        data (np.ndarray): the values that need to be mapped to the nodes. Shape is (N,)
+        coordinates (np.ndarray): 3D coordinates fo each node. Shape is (N, 3)
+        axis (plt.Axes): Which axis to plot in. This means you have to already have a figure and an axis to plot in.
+        view (Tuple[int, int], optional): Which view to look at. Defaults to (90, 180).
+        size (int, optional): Size of the nodes. Defaults to 20.
+        cmap (any, optional): Color map. Defaults to "viridis" which I don't like but you do you.
+        scatter_kwargs (_type_, optional): kwargs for the dots. Defaults to Optional[None].
+
+    Returns:
+        plt.Axes: matplotlib axis with the brain plotted.
+    """
+    scatter_kwargs = scatter_kwargs if scatter_kwargs else {}
+
+    axis.scatter(
+        coordinates[:, 0],
+        coordinates[:, 1],
+        coordinates[:, 2],
+        c=data,
+        cmap=cmap,
+        s=size,
+        **scatter_kwargs,
+    )
+    axis.view_init(*view)
+    axis.axis("off")
+    scaling = np.array([axis.get_xlim(), axis.get_ylim(), axis.get_zlim()])
+    axis.set_box_aspect(tuple(scaling[:, 1] / 1.2 - scaling[:, 0]))
+    return axis
+
