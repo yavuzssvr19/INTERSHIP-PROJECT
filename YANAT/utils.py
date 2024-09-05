@@ -104,64 +104,6 @@ def strength_normalization(adjacency_matrix: np.ndarray) -> np.ndarray:
     )
     return normalized_adjacency_matrix
 
-# Kısaca Simulasyonu hazır hale getiren parametreleri üreten bir fonksiyondur. 
-def optimal_influence_default_values(
-    adjacency_matrix: np.ndarray,
-    location: str = "adjacency_matrices_for_oi",
-    random_seed: int = 11,
-) -> dict:
-    """
-    Returns the default values for the parameters of the optimal_influence function.
-
-    Parameters:
-        adjacency_matrix (np.ndarray): The adjacency matrix representing the network structure.
-        location (str, optional): The location to save the adjacency matrix file. Defaults to "adjacency_matrices_for_oi".
-        random_seed (int, optional): The random seed for generating input noise. Defaults to 11.
-
-    Returns:
-        dict: Default values for the parameters of the optimal_influence function.
-    """
-    rng: Generator = np.random.default_rng(seed=random_seed)
-    NOISE_STRENGTH: float = 1
-    DELTA: float = 0.01
-    TAU: float = 0.02
-    G: float = 0.5
-    DURATION: int = 10
-    input_noise: np.ndarray = rng.normal(
-        0, NOISE_STRENGTH, (adjacency_matrix.shape[0], int(DURATION / DELTA))
-    ) # Simullasyonu yapılmasını sağlayacak girdi gürültüsünün oluşturulması, node sayısına göre bir girdi gürültüsü üretilir
-    model_params: dict = { #simulasyonumuzda bize yardımcı olacak model parametre sözlüğü 
-        "dt": DELTA,
-        "timeconstant": TAU,
-        "coupling": G,
-        "duration": DURATION,
-    }
-    timestamp: str = datetime.now().strftime("%Y_%m_%d-%I_%M_%S_%p")
-    """   
-    Fonksiyon, komşuluk matrisini belirli bir konumda .pkl formatında kaydeder. Bu, Python’un pickle modülü kullanılarak yapılan bir serileştirme işlemidir ve 
-    Python nesnelerinin disk üzerinde saklanmasını ve daha sonra bu nesnelerin tam olarak aynı durumda geri yüklenmesini sağlar. Zaman damgası ve düğüm sayısı 
-    gibi ek bilgilerle dosya adı oluşturulması, farklı simülasyonlar için dosyalar arasında kolay ayrım yapılmasına olanak tanır.
-    """
-    base_path: Path = Path(location)
-    base_path.mkdir(parents=True, exist_ok=True)
-    file_location: str = (
-        base_path / f"adjmat_{adjacency_matrix.shape[0]}_nodes_{timestamp}"
-    ) #matriximiz belirtilen konuma piksel formatında kaydedilir 
-
-    with open(f"{file_location}.pkl", "wb") as f:
-        pk.dump(adjacency_matrix, f)
-
-    game_params: dict = {
-        "adjacency_matrix": f"{file_location}.pkl",
-        "input_noise": input_noise,
-        "model_params": model_params,
-    }
-
-    # TODO: allow already pickled adjacency matrices to be used as input.
-    # TODO: allow the user to specify an arbitrary parameter while keeping the rest as default.
-    return game_params
-# TODLAR YAPILDIKTAN SONRA FONKSİYONUN YENİ HALİ 
-# We need the function to be able to read a pickled file if it is already there instead of making one. bu cümleyi sağladık gibi 
 def optimal_influence_default_values_NEW(
     adjacency_matrix=None,
     location="adjacency_matrices_for_oi",
@@ -186,10 +128,7 @@ def optimal_influence_default_values_NEW(
         dict: Default values for the parameters of the optimal_influence function.
     """
     # Generate input noise
-    """  
-    Fonksiyon, **kwargs aracılığıyla alınan anahtar kelimeleri kullanarak model parametrelerini (örneğin, gürültü gücü, zaman aralığı, zaman sabiti, 
-    bağlantı kuvveti ve süre) özelleştirmeye izin verir. Kullanıcı, varsayılan değerlerin üzerine yazabilir ve bu özellik fonksiyonun esnekliğini artırır.
-    """
+    
     rng = np.random.default_rng(seed=random_seed)
     NOISE_STRENGTH = kwargs.get("noise", 1)  # default noise strength is 1 unless overridden
     DELTA = kwargs.get("dt", 0.01)           # default delta
@@ -198,12 +137,7 @@ def optimal_influence_default_values_NEW(
     DURATION = kwargs.get("duration", 10)    # default duration
     
     # Load or save the adjacency matrix
-    """  
-    Aşağıdaki if li yapının açıklaması 
-    Fonksiyon, path_to_pickle parametresi verilerek çağrıldığında, bu dosya yolu üzerinden mevcut bir pickle dosyasını yükler. 
-    Eğer path_to_pickle belirtilmiş ve adjacency_matrix verilmemişse, belirtilen pickle dosyasından komşuluk matrisini yükler. 
-    Bu, kullanıcının her seferinde matrisi yeniden sağlamasını gerektirmeyen esnek bir kullanım sağlar.
-    """ 
+
     if path_to_pickle and not adjacency_matrix:
         with open(path_to_pickle, "rb") as f:
             adjacency_matrix = pk.load(f)
@@ -237,7 +171,6 @@ def optimal_influence_default_values_NEW(
 
     return game_params
 
-"""*******************            simple_fit fonksiyonunun parelelize ve skcitklarn kütüphanesine uygun hali                  ***********************************************"""
 def _process_parameter(parameter: Dict, model: Callable, model_kwargs: Dict, target_matrix: np.ndarray, normalize: Union[bool, Callable]) -> Dict:
     # process_parameter function during parallel processing to make predictions for each parameter combination using the model, compare these predictions with the target matrix, and then calculate and store the resulting correlation value
     """Processes a single parameter set, running the model and calculating correlation.
@@ -252,8 +185,6 @@ def _process_parameter(parameter: Dict, model: Callable, model_kwargs: Dict, tar
     Returns:
         Dict: The parameter set with the added correlation value.
     """
-    # Evet, process_parameter fonksiyonunu, paralel işleme sırasında her bir parametre kombinasyonu için modelin tahminini yapıp bu tahmini hedef matrisle karşılaştırmak ve sonuç olarak korelasyon değerini hesaplayıp kaydetmek amacıyla kullanıyorsunuz
-    
     estimation = model(**parameter, **model_kwargs)
     if normalize:
         estimation: np.ndarray = normalize(estimation)
@@ -261,8 +192,8 @@ def _process_parameter(parameter: Dict, model: Callable, model_kwargs: Dict, tar
     parameter.update({"correlation": r})
     
     return parameter
-# parallel processing with joblib's Parallel and delayed functions, making it efficient for larger datasets, and compatible with Scikit-learn's model and parameter grid structures.
-def simple_fit( #  Paralel işlemeyi destekler ve bu nedenle daha büyük veri kümeleri veya daha fazla parametre kombinasyonu için daha verimlidir.
+
+def simple_fit( 
     model: Callable,
     X: np.ndarray,
     parameter_space: List[Dict],
@@ -271,7 +202,6 @@ def simple_fit( #  Paralel işlemeyi destekler ve bu nedenle daha büyük veri k
     n_jobs: int = -1
 ) -> List[Dict]:
 
-    # verilen bir model ve hedef matris ile en iyi uyumu sağlayan parametre kombinasyonunu bulmayı amaçlar.
     """
     Simple fitting function to find the best parameters for a model.
 
@@ -286,6 +216,7 @@ def simple_fit( #  Paralel işlemeyi destekler ve bu nedenle daha büyük veri k
     Returns:
         list: Updated copy of the parameter space with the correlation values.
     """
+    # If no additional arguments are provided, initialize an empty dictionary
     if model_kwargs is None:
         model_kwargs = {}
 
@@ -296,8 +227,6 @@ def simple_fit( #  Paralel işlemeyi destekler ve bu nedenle daha büyük veri k
     )
     return processed_results
 
-# A Function That Enables Parallel Computation
-# yeni yazdırdığın kodda tam olarak ne var eskisinden farkı ne? ve istediği sckitlearn e benzetme ve parelelizasyon işlemleri tam olarak sağlandı mı? 
 def _matrix_correlation(one_matrix: np.ndarray, another_matrix: np.ndarray) -> float:
     """Computes the Pearson's correlation between two matrices (not just the upper-triangle).
 
