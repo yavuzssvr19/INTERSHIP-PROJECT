@@ -2,7 +2,7 @@
 
 This repository contains Jupyter notebooks that analyze brain connectivity using Spatial Autoregressive (SAR) and Laplacian Autoregressive (LAM) models at different brain resolution levels. This project was developed as part of my Erasmus+ internship at the Institute of Computational Neuroscience (ICNS), University Medical Center Hamburg-Eppendorf, where I had the opportunity to work alongside researchers focused on cutting-edge brain connectivity studies.
 
-In this project, I utilized the YANAT library, which was developed by the ICNS, for model fitting and analysis. One key component of this library is the simple_fit function, which I updated and modified to meet the specific requirements of this project. My contributions include implementing necessary changes to this function to optimize the fitting of the SAR and LAM models. These updates are now reflected in the YANAT library, enabling more effective use in future projects.
+In this project, I utilized the YANAT library, which was developed by the ICNS, for model fitting and analysis. One key component of this library is the simple_fit function which is located on the 'utils.py', which I updated and modified to meet the specific requirements of this project. My contributions include implementing necessary changes to this function to optimize the fitting of the SAR and LAM models. These updates are now reflected in the YANAT library, enabling more effective use in future projects.
 
 Through this work, I aim to provide insights into how different normalization techniques can affect the accuracy and correlation of these models, ultimately enhancing our understanding of the brain's structural and functional connectivity (FC). Before diving into the project, I thoroughly reviewed the existing literature by reading 5-6 relevant research papers to familiarize myself with the field, ensuring that the methodologies and models used here are aligned with the latest findings from ICNS and the broader neuroscience community.
 
@@ -30,12 +30,12 @@ These models are applied to functional and structural brain connectivity matrice
 
 ## Notebooks
 
-### Notebook 1: SAR and LAM Models Brain Discovery at Different Resolutions
+### best_resolution_value.ipynb: SAR and LAM Models Brain Discovery at Different Resolutions
 - Focuses on comparing SAR and LAM models across five different resolution (`res_parcellation`) values.
 - Uses **log min-max normalization** to preprocess connectivity matrices.
 - Fits SAR and LAM models and evaluates their performance based on correlation with the human FC matrix.
 
-### Notebook 2: A Comparative Analysis of Normalization Techniques and SAR/LAM Models
+### analaysis_of_models.ipynb: A Comparative Analysis of Normalization Techniques and SAR/LAM Models
 - Compares various normalization techniques (log min-max, min-max, binarizing, spectral normalization) and their impact on SAR and LAM models.
 - The notebook determines the best normalization technique for each model.
 - Visualizes the brain network using heatmaps and plots.
