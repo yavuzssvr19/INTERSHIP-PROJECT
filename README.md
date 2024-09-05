@@ -30,12 +30,12 @@ These models are applied to functional and structural brain connectivity matrice
 
 ## Notebooks
 
-### Notebook 1: SAR and LAM Models Brain Discovery at Different Resolutions
+### best_resolution_value.ipynb: SAR and LAM Models Brain Discovery at Different Resolutions
 - Focuses on comparing SAR and LAM models across five different resolution (`res_parcellation`) values.
 - Uses **log min-max normalization** to preprocess connectivity matrices.
 - Fits SAR and LAM models and evaluates their performance based on correlation with the human FC matrix.
 
-### Notebook 2: A Comparative Analysis of Normalization Techniques and SAR/LAM Models
+### analaysis_of_models.ipynb: A Comparative Analysis of Normalization Techniques and SAR/LAM Models
 - Compares various normalization techniques (log min-max, min-max, binarizing, spectral normalization) and their impact on SAR and LAM models.
 - The notebook determines the best normalization technique for each model.
 - Visualizes the brain network using heatmaps and plots.
